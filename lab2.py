@@ -32,7 +32,8 @@ def generate_tweet_corpus(filename):
 		tweets = f.readlines()
 	corpus=[]
 	for i in tweets:
-		corpus.append(i.split("\t")[3])
+		if(len(i)>1):
+			corpus.append(i)
 	return corpus
 
 def filter_text(corpus):
