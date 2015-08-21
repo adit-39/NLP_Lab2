@@ -44,18 +44,13 @@ def filter_text(corpus):
 		try:
 			tweet = tweet.decode("utf-8")
 			tweet = tweet.encode("ascii")
-			tweet = tweet.split(" ")
-			# tweet = sep.split(tweet)
+			# tweet = tweet.split(" ")
+			tweet = sep.split(tweet)
 			for word in tweet:
 				w = word
-				print w
 				if hasht.search(w) or atp.search(w) or url.search(w):
 					w="*"
 					break
-				# for ch in unknown:
-				# 	if ch in word:
-				# 		w = "*"
-				# 		break
 				if "\n" in word:
 					w = word.replace("\n", "")
 				sentence.append(w)
