@@ -3,12 +3,13 @@ import HTMLParser
 from nltk import word_tokenize
 import heapq
 import sys
+from nltk.stem.lancaster import LancasterStemmer
 reload(sys)
 sys.setdefaultencoding('utf8')
 
 html_parser = HTMLParser.HTMLParser()
 
-def clean_tweets(filename="corpus.txt"):
+def clean_tweets(filename="tweets.txt"):
 	"""
 		Function to clean up tweets by:
 		1) Escaping HTML
@@ -40,14 +41,38 @@ def clean_tweets(filename="corpus.txt"):
 	return list(clean_tweets)
 	
 
-def construct_vocabulary(d,n):
+def construct_vocabulary(tweets,n,stemming=False):
 	"""
 		Utility function to return n words with highest unigram frequencies
 	"""
-	return heapq.nlargest(n ,d, key = lambda k: d[k])
+	
+	d = {}
+	puncts = r'#=^+-!:-;,{}()[]/\_@'
+	if not stemming:
+		for i in tweets:
+			l1 = word_tokenize(i)
+			l = [x for x in l1 if x not in puncts]
+			for word in l:
+				if d.has_key(word):
+					d[word]+=1
+				else:
+					d[word]=1
+		return heapq.nlargest(n ,d, key = lambda k: d[k])
+	else:
+		st = LancasterStemmer()
+		for i in tweets:
+			l1 = word_tokenize(i)
+			l = [x for x in l1 if x not in puncts]
+			for word in l:
+				stemmed = st.stem(word)
+				if d.has_key(stemmed):
+					d[stemmed]+=1
+				else:
+					d[stemmed]=1
+		return heapq.nlargest(n ,d, key = lambda k: d[k])
 
 
-def construct_tuples(samples,size=3):
+def construct_tuples(samples,vocab,size=3):
 	"""
 		Make lists of given size from each sentence in samples using a sliding 
 		window technique	
@@ -58,19 +83,22 @@ def construct_tuples(samples,size=3):
 	for i in samples:
 		l1 = word_tokenize(i)
 		l = [x for x in l1 if x not in puncts]
-		for word in l:
-			if d.has_key(word):
-				d[word]+=1
-			else:
-				d[word]=1
 		for j in range(len(l)-3):
-			tups.append(l[j:j+3])
-	return tups,d
+			nlist = []
+			for k in range(3):
+				if l[j+k] in vocab:
+					nlist.append(l[j+k])
+				else:
+					nlist.append('__UNK__')
+			tups.append(nlist)
+	return tups
 			
 if __name__=="__main__":
 	tweets = clean_tweets()
 	#print tweets
-	tups,counts = construct_tuples(tweets)
-	#print tups
-	vocab = construct_vocabulary(counts,2000)
+	vocab = construct_vocabulary(tweets,2000)
+	vocab.append('__UNK__')
+	tups = construct_tuples(tweets,vocab)
+	print tups
+	#vocab = construct_vocabulary(counts,2000)
 	#print vocab
