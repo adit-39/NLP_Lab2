@@ -1,3 +1,4 @@
+import pickle
 import re
 import HTMLParser
 from nltk import word_tokenize
@@ -33,11 +34,15 @@ def clean_tweets(filename="tweets.txt"):
 		(?:%[0-9a-fA-F][0-9a-fA-F]))+|http$','url',tw) 										# Removing URLs
 		tw,subs = re.subn(r'(\:\w+\:|\<[\/\\]?3|[\(\)\\\D|\*\$][\-\^]?[\:\;\=]\
 		|[\:\;\=B8][\-\^]?[3DOPp\@\$\*\\\)\(\/\|])(?=\s|[\!\.\?]|$)','emoticon',tw)			# Removing emoticons
-		tw,subs = re.subn(r'[.!-_/]{2,}','',tw) 												# Removing unnecessary punctuation
+		tw,subs = re.subn(r"""[-_/#"'|\`:%]|[.?!]{2,}""",'',tw) 							# Removing unnecessary punctuation
 		tw,subs = re.subn(r'[-+]?[\d]+(.[\d]+(e[\d]+))?','num',tw)
 		tweet = ' '.join(tw.strip().split()) 												# Removing whitespaces in the middle and end
 		if(tweet and len(tweet)>20):
 			clean_tweets.add(tweet.lower())													# Converting to lowercase
+	f = open("cleaned_tweets.txt","w")
+	for i in clean_tweets:
+		f.write(i+'\n')
+	f.close()
 	return list(clean_tweets)
 	
 
@@ -95,10 +100,13 @@ def construct_tuples(samples,vocab,size=3):
 			
 if __name__=="__main__":
 	tweets = clean_tweets()
-	#print tweets
+	'''
 	vocab = construct_vocabulary(tweets,2000)
 	vocab.append('__UNK__')
 	tups = construct_tuples(tweets,vocab)
-	print tups
-	#vocab = construct_vocabulary(counts,2000)
-	#print vocab
+	pickle.dump(tups,open("tups.pkl","wb"))
+	pickle.dump(vocab,open("vocab.pkl","wb"))
+	'''
+	tups = pickle.load(open("tups.pkl","rb"))
+	vocab = pickle.load(open("vocab.pkl","rb"))
+	#print vocab[:200]
